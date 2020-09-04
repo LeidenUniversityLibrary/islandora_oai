@@ -462,12 +462,25 @@ function islandora_oai_query_solr($start = 0, $field = 'PID', $query = NULL, $se
     // Remove any base search filters.
     $query_processor->solrParams = islandora_solr_remove_base_filters($query_processor->solrParams);
   }
+  if (variable_get('islandora_oai_deleted_record', 'no') !== 'no') {
+    // Remove any search filters that remove deleted records from standard search.
+    $fq = $query_processor->solrParams['fq'];
+    $solrfielddeleted = variable_get('islandora_oai_deleted_solr_field', FALSE);
+    $deletedvalue = variable_get('islandora_oai_deleted_value', FALSE);
+    if ($solrfielddeleted !== FALSE && $deletedvalue !== FALSE) {
+      if (($key = array_search("-$solrfielddeleted:$deletedvalue", $fq)) !== FALSE) {
+        unset($fq[$key]);
+        $query_processor->solrParams['fq'] = $fq;
+      }
+    }
+  }
 
   // Build the fields to return.
   $fl_fields = islandora_oai_get_membership_array();
   $fl_fields[] = 'PID';
   $fl_fields[] = variable_get('islandora_oai_date_field', 'fgs_lastModifiedDate_dt');
-  $query_processor->solrParams['fl'] = implode(',', $fl_fields);
+  $fl_fields[] = variable_get('islandora_oai_deleted_solr_field', NULL);
+  $query_processor->solrParams['fl'] = implode(',', array_filter($fl_fields));
 
   // Build the filter array.
   if ($date_query) {

@@ -200,6 +200,9 @@ function islandora_oai_uninstall() {
     'islandora_oai_solr_state_field',
     'islandora_oai_solr_collection_description_field',
     'islandora_oai_solr_object_ancestors_field',
+    'islandora_oai_deleted_record',
+    'islandora_oai_deleted_solr_field',
+    'islandora_oai_deleted_value',
   );
   array_walk($variables, 'variable_del');
 }

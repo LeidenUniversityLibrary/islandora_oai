@@ -462,7 +462,8 @@ function islandora_oai_identify(&$writer, array $args) {
   $writer->writeElement('protocolVersion', '2.0');
   $writer->writeElement('adminEmail', variable_get('islandora_oai_admin_email', 'N/A'));
   $writer->writeElement('earliestDatestamp', $earliest_datestamp);
-  $writer->writeElement('deletedRecord', 'no');
+  $deletedRecord = variable_get('islandora_oai_deleted_record', 'no');
+  $writer->writeElement('deletedRecord', $deletedRecord);
   $writer->writeElement('granularity', 'YYYY-MM-DDThh:mm:ssZ');
   $writer->writeElement('compression', 'yes');
 
@@ -776,12 +777,31 @@ function islandora_oai_build_record_response(XMLWriter &$writer, array $record, 
   $repo_id = variable_get('islandora_oai_repository_identifier', 'drupal-site.org');
   $date = new DateTime((string) $record['date'], new DateTimeZone('UTC'));
   $date_stamp = $date->format("Y-m-d\TH:i:s\Z");
+  $deleted = FALSE;
 
   if ($full_record) {
     $writer->startElement('record');
   }
 
   $writer->startElement('header');
+  if (variable_get('islandora_oai_deleted_record', 'no') !== 'no') {
+    $solrfield = variable_get('islandora_oai_deleted_solr_field', FALSE);
+    $deletedvalue = variable_get('islandora_oai_deleted_value', FALSE);
+    if ($solrfield !== FALSE && $deletedvalue !== FALSE) {
+      if (isset($record['solr_doc'][$solrfield])) {
+        $values = $record['solr_doc'][$solrfield];
+        if (!is_array($values)) {
+          $values = array($values);
+        }
+        if (in_array($deletedvalue, $values)) {
+          $deleted = TRUE;
+          $writer->startAttribute('status');
+          $writer->text('deleted');
+          $writer->endAttribute();
+        }
+      }
+    }
+  }
   $writer->writeElement('identifier', 'oai:' . $repo_id . ':' . $identifier);
   $writer->writeElement('datestamp', $date_stamp);
 
@@ -800,7 +820,7 @@ function islandora_oai_build_record_response(XMLWriter &$writer, array $record, 
   $writer->endElement();
 
   // List record values.
-  if ($full_record) {
+  if ($full_record && !$deleted) {
     $record_xml = islandora_oai_filter_function('response_xml');
     if (isset($record_xml['file'])) {
       require_once $record_xml['file'];
@@ -814,6 +834,8 @@ function islandora_oai_build_record_response(XMLWriter &$writer, array $record, 
       $writer->writeRaw($oai_output);
       $writer->endElement();
     }
+  }
+  if ($full_record) {
     // Close our record.
     $writer->endElement();
   }

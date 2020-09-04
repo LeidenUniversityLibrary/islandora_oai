@@ -71,6 +71,36 @@ function islandora_oai_admin_form(array $form, array $form_state) {
     '#default_value' => variable_get('islandora_oai_expire_time', '86400'),
     '#description' => t('The amount of time a resumption token will remain valid, in seconds. Defaults to one day (86400s).'),
   );
+  $form['islandora_oai_configuration']['islandora_oai_deleted_record'] = array(
+    '#type' => 'select',
+    '#title' => t('Deleted records'),
+    '#default_value' => variable_get('islandora_oai_deleted_record', 'no'),
+    '#options' => array(
+      'no' => t('No support'),
+      'transient' => t('Transient support'),
+      'persistent' => t('Persistent support'),
+    ),
+  );
+  $form['islandora_oai_configuration']['islandora_oai_deleted_config'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Deleted record Solr config'),
+    '#states' => array(
+      'invisible' => array(
+         ':input[name="islandora_oai_configuration[islandora_oai_deleted_record]"]' => array('value' => 'no'),
+      ),
+    ),
+  );
+  $form['islandora_oai_configuration']['islandora_oai_deleted_config']['islandora_oai_deleted_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Solr field'),
+    '#default_value' => variable_get('islandora_oai_deleted_solr_field', ''),
+  );
+  $form['islandora_oai_configuration']['islandora_oai_deleted_config']['islandora_oai_deleted_value'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Value'),
+    '#default_value' => variable_get('islandora_oai_deleted_value', ''),
+  );
+
   $form['islandora_oai_configuration']['islandora_oai_query_backend'] = array(
     '#type' => 'radios',
     '#title' => t('Query Backend'),
@@ -170,6 +200,9 @@ function islandora_oai_admin_form_submit(array $form, array $form_state) {
   variable_set('islandora_oai_admin_email', $form_state['values']['islandora_oai_configuration']['islandora_oai_admin_email']);
   variable_set('islandora_oai_max_size', $form_state['values']['islandora_oai_configuration']['islandora_oai_max_size']);
   variable_set('islandora_oai_expire_time', $form_state['values']['islandora_oai_configuration']['islandora_oai_expire_time']);
+  variable_set('islandora_oai_deleted_record', $form_state['values']['islandora_oai_configuration']['islandora_oai_deleted_record']);
+  variable_set('islandora_oai_deleted_solr_field', $form_state['values']['islandora_oai_configuration']['islandora_oai_deleted_config']['islandora_oai_deleted_solr_field']);
+  variable_set('islandora_oai_deleted_value', $form_state['values']['islandora_oai_configuration']['islandora_oai_deleted_config']['islandora_oai_deleted_value']);
   variable_set('islandora_oai_request_handler', $form_state['values']['islandora_oai_configuration']['handlers']['default']);
   variable_set('islandora_oai_query_backend', $form_state['values']['islandora_oai_configuration']['islandora_oai_query_backend']);
   variable_set('islandora_oai_solr_state_field', $form_state['values']['islandora_oai_configuration']['islandora_oai_solr_state_field']);
