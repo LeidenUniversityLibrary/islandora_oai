@@ -80,13 +80,21 @@ function islandora_oai_admin_form(array $form, array $form_state) {
       'transient' => t('Transient support'),
       'persistent' => t('Persistent support'),
     ),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="islandora_oai_configuration[islandora_oai_query_backend]"]' => array('value' => 'solr'),
+      ),
+    ),
   );
   $form['islandora_oai_configuration']['islandora_oai_deleted_config'] = array(
     '#type' => 'fieldset',
     '#title' => t('Deleted record Solr config'),
     '#states' => array(
+      'visible' => array(
+        ':input[name="islandora_oai_configuration[islandora_oai_query_backend]"]' => array('value' => 'solr'),
+      ),
       'invisible' => array(
-         ':input[name="islandora_oai_configuration[islandora_oai_deleted_record]"]' => array('value' => 'no'),
+        ':input[name="islandora_oai_configuration[islandora_oai_deleted_record]"]' => array('value' => 'no'),
       ),
     ),
   );
