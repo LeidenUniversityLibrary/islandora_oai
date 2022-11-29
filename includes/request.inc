@@ -522,10 +522,11 @@ EOQ;
         $qp->buildQuery(format_string('!date_field:* AND !state_field:Active', array(
           '!date_field' => $date_field,
           '!state_field' => variable_get('islandora_oai_solr_state_field', 'fgs_state_s'),
-        )));
+        )), $params);
         $qp->executeQuery(FALSE);
         $result = reset($qp->islandoraSolrResult['response']['objects']);
-        $earliest_datestamp = $result['solr_doc'][$date_field];
+        $timestamp = strtotime($result['solr_doc'][$date_field]);
+        $earliest_datestamp = gmdate('Y-m-d\TH:i:s\Z', $timestamp);
         break;
 
     }
