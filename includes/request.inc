@@ -79,7 +79,7 @@ function islandora_oai_parse_request() {
   // Check to see if we have a bad verb.
   $error_list = islandora_oai_get_errors();
 
-  if (!count($error_list)) {
+  if (empty($error_list)) {
     $writer->writeAttribute('verb', $verb);
   }
   $writer->text($request_url);
@@ -447,7 +447,7 @@ function islandora_oai_identify(&$writer, array $args) {
   $error_text = islandora_oai_get_errors();
 
   // Catch for a bad argument.
-  if (count($error_text) > 0 && (count($args) > 0)) {
+  if (!empty($error_text) && !empty($args)) {
     foreach ($args as $key => $val) {
       islandora_oai_add_error('badArgument', $key, $val);
       return FALSE;
